@@ -1,0 +1,52 @@
+name: Generate and publish article
+on:
+  schedule:
+    - cron: "17 23 * * 1,4"
+  workflow_dispatch:
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+concurrency:
+  group: pages
+  cancel-in-progress: false
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 24 }
+      - name: Generate one reviewed-by-rules article
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENAI_MODEL: ${{ vars.OPENAI_MODEL || 'gpt-5-mini' }}
+          RAKUTEN_APPLICATION_ID: ${{ secrets.RAKUTEN_APPLICATION_ID }}
+          RAKUTEN_ACCESS_KEY: ${{ secrets.RAKUTEN_ACCESS_KEY }}
+          RAKUTEN_AFFILIATE_ID: ${{ secrets.RAKUTEN_AFFILIATE_ID }}
+          ARTICLE_KEYWORDS: ${{ vars.ARTICLE_KEYWORDS }}
+          SITE_URL: ${{ vars.SITE_URL }}
+        run: npm run generate
+      - name: Commit generated article
+        run: |
+          git config user.name "rakuten-blogtool[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add content
+          git diff --cached --quiet || git commit -m "content: publish scheduled article"
+          git push
+      - run: npm run build
+        env:
+          SITE_URL: ${{ vars.SITE_URL }}
+          BLOG_NAME: ${{ vars.BLOG_NAME }}
+          BLOG_DESCRIPTION: ${{ vars.BLOG_DESCRIPTION }}
+      - uses: actions/upload-pages-artifact@v3
+        with: { path: dist }
+  deploy:
+    needs: generate
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

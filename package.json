@@ -1,0 +1,12 @@
+{
+  "name": "rakuten-blogtool",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "generate": "node scripts/generate-article.mjs",
+    "build": "node scripts/build-site.mjs",
+    "check": "node --check scripts/generate-article.mjs && node --check scripts/build-site.mjs"
+  },
+  "engines": { "node": ">=20" }
+}
