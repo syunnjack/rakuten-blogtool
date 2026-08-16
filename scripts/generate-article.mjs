@@ -25,7 +25,14 @@ const params = new URLSearchParams({
   hasReviewFlag: "1"
 });
 const rakutenUrl = `https://openapi.rakuten.co.jp/ichibams/api/IchibaItem/Search/20260701?${params}`;
-const rakutenResponse = await fetch(rakutenUrl, { headers: { accessKey: process.env.RAKUTEN_ACCESS_KEY } });
+const siteUrl = process.env.SITE_URL || "https://syunnjack.github.io/rakuten-blogtool/";
+const rakutenResponse = await fetch(rakutenUrl, {
+  headers: {
+    accessKey: process.env.RAKUTEN_ACCESS_KEY,
+    Referer: siteUrl,
+    "User-Agent": "rakuten-blogtool/1.0"
+  }
+});
 if (!rakutenResponse.ok) throw new Error(`Rakuten API ${rakutenResponse.status}: ${await rakutenResponse.text()}`);
 const rakuten = await rakutenResponse.json();
 const rawItems = rakuten.Items || rakuten.items || [];
