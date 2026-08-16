@@ -15,6 +15,7 @@ const keyword = [...counts].sort((a, b) => a[1] - b[1])[0][0];
 
 const params = new URLSearchParams({
   applicationId: process.env.RAKUTEN_APPLICATION_ID,
+  accessKey: process.env.RAKUTEN_ACCESS_KEY,
   affiliateId: process.env.RAKUTEN_AFFILIATE_ID,
   keyword,
   format: "json",
@@ -27,9 +28,12 @@ const params = new URLSearchParams({
 const rakutenUrl = `https://openapi.rakuten.co.jp/ichibams/api/IchibaItem/Search/20260701?${params}`;
 const siteUrl = process.env.SITE_URL || "https://syunnjack.github.io/rakuten-blogtool/";
 const rakutenResponse = await fetch(rakutenUrl, {
+  referrer: siteUrl,
+  referrerPolicy: "unsafe-url",
   headers: {
     accessKey: process.env.RAKUTEN_ACCESS_KEY,
     Referer: siteUrl,
+    Origin: new URL(siteUrl).origin,
     "User-Agent": "rakuten-blogtool/1.0"
   }
 });
